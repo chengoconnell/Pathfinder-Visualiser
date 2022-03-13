@@ -1,4 +1,4 @@
-export const Dijkstra = (grid, startNode, endNode) => {
+export const dijkstra = (grid, startNode, endNode) => {
   // handle edge cases
   const visitedNodesInOrder = [];
   if (startNode === endNode) return false;
@@ -7,6 +7,8 @@ export const Dijkstra = (grid, startNode, endNode) => {
   while (!!unvisitedNodes.length) {
     sortNodesByDistance(unvisitedNodes);
     const closestNode = unvisitedNodes.shift();
+    if (closestNode.isWall) continue;
+    if (closestNode.distance === Infinity) return visitedNodesInOrder;
     // handle walls (later)
     // handle impossible conditions (later)
     // handle animation (later)
@@ -48,11 +50,8 @@ const getNeighbours = (node, grid) => {
 const getAllNodes = (grid) => {
   // converts 2d array of nodes to 1 array
   const nodes = [];
-  console.log("grid in get all nodes", grid);
   for (const row of grid) {
-    console.log("row", row);
     for (const node of row) {
-      console.log(node, "node");
       nodes.push(node);
     }
   }
