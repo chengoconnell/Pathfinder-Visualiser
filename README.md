@@ -18,6 +18,12 @@ Dijkstra's Algorithm is an algorithm for finding the shortest path between two n
 **See how the algorithm finds the shortest path based on the minimum distance (weights) of surrounding edges**
 <img width="900" alt="Screenshot 2022-04-17 at 15 53 03" src="https://user-images.githubusercontent.com/69536010/163719931-0fba9e79-7873-41a8-8e14-7817837b352b.png">
 
+## Getting Started
+1. Clone the repo: https://github.com/chengoconnell/Pathfinder-Visualiser.git
+2. Install dependecies: `npm install`
+3. Run the app on localhost: `npm start`
+
+
 ## Built With
 - Typescript
 - React
