@@ -1,7 +1,8 @@
+import { NodeAttributes } from "../PathfindingVisualiser/PathfindingVisualiser";
+
 export const dijkstra = (grid, startNode, endNode) => {
   // handle edge cases
   const visitedNodesInOrder = [];
-  if (startNode === endNode) return false;
   startNode.distance = 0;
   const unvisitedNodes = getAllNodes(grid);
   while (!!unvisitedNodes.length) {
@@ -9,14 +10,10 @@ export const dijkstra = (grid, startNode, endNode) => {
     const closestNode = unvisitedNodes.shift();
     if (closestNode.isWall) continue;
     if (closestNode.distance === Infinity) return visitedNodesInOrder;
-    // handle walls (later)
-    // handle impossible conditions (later)
-    // handle animation (later)
     closestNode.isVisited = true;
     visitedNodesInOrder.push(closestNode);
-    // return an array of nodes in the order we visited them in for animation
     if (closestNode === endNode) return visitedNodesInOrder;
-    updateNeighbours(closestNode, grid);
+    updateUnvisitedNeighbours(closestNode, grid);
   }
 };
 
@@ -25,17 +22,18 @@ const sortNodesByDistance = (unvisitedNodes) => {
   unvisitedNodes.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
 };
 
-const updateNeighbours = (node, grid) => {
-  const neighbours = getNeighbours(node, grid);
+const updateUnvisitedNeighbours = (node, grid) => {
+  const neighbours = getUnvisitedNeighbours(node, grid);
 
   for (const neighbour of neighbours) {
     neighbour.distance = node.distance + 1;
+    neighbour.previousNode = node;
   }
 };
 
-const getNeighbours = (node, grid) => {
+const getUnvisitedNeighbours = (node, grid) => {
   const neighbours = [];
-  const { row, col } = node;
+  const { col, row } = node;
   // get north neighbour
   if (row > 0) neighbours.push(grid[row - 1][col]);
   // get south neighbour
@@ -43,8 +41,8 @@ const getNeighbours = (node, grid) => {
   // get east neighbour
   if (col > 0) neighbours.push(grid[row][col - 1]);
   // get west neigbour
-  if (col < grid[row].length - 1) neighbours.push(grid[row][col + 1]);
-  return neighbours;
+  if (col < grid[0].length - 1) neighbours.push(grid[row][col + 1]);
+  return neighbours.filter((neighbour) => !neighbour.isVisited);
 };
 
 const getAllNodes = (grid) => {
@@ -56,4 +54,15 @@ const getAllNodes = (grid) => {
     }
   }
   return nodes;
+};
+
+// backtracks from endNode to startNode to create array of nodes in shortest path order
+export const getNodesInShortestPathOrder = (endNode: NodeAttributes) => {
+  const nodesInShortestPathOrder = [];
+  let currentNode = endNode;
+  while (currentNode !== null) {
+    nodesInShortestPathOrder.unshift(currentNode);
+    currentNode = currentNode.previousNode;
+  }
+  return nodesInShortestPathOrder;
 };

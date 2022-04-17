@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { dijkstra } from "../Algorithms/Dijkstra";
+import { dijkstra, getNodesInShortestPathOrder } from "../Algorithms/Dijkstra";
 import { Node } from "./Node/Node";
 import "./PathfindingVisualiser.css";
 
@@ -17,7 +17,6 @@ export interface NodeAttributes {
   isVisited: boolean;
   isWall: boolean;
   previousNode: null;
-  isMousePressed: boolean;
 }
 
 export const PathfindingVisualiser = () => {
@@ -38,58 +37,72 @@ export const PathfindingVisualiser = () => {
 
   const handleMouseUp = () => setMousePressed(false);
 
-  // setStateGrid(grid);
-  const animateDijkstra = (visitedNodesInOrder) => {
-    for (let i = 0; i < visitedNodesInOrder.length; i++) {
+  const animateDijkstra = (visitedNodesInOrder, nodesInShortestPathOrder) => {
+    for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+      if (i === visitedNodesInOrder.length) {
+        setTimeout(() => {
+          animateShortestPath(nodesInShortestPathOrder);
+        }, 10 * i);
+        return;
+      }
       setTimeout(() => {
         const node = visitedNodesInOrder[i];
-        const newGrid = grid.slice();
-        const newNode = {
-          ...node,
-          isVisited: true,
-        };
-        newGrid[node.row][node.col] = newNode;
-        console.log(document.getElementById(`node-${node.row}-${node.col}`));
         document.getElementById(
           `node-${node.row}-${node.col}`
         ).className = `node node-visited`;
-        setGrid(newGrid);
-      }, 100 * i);
+      }, 10 * i);
     }
   };
+
+  const animateShortestPath = (nodesInShortestPathOrder) => {
+    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
+      setTimeout(() => {
+        const node = nodesInShortestPathOrder[i];
+        document.getElementById(
+          `node-${node.row}-${node.col}`
+        ).className = `node node-shortest-path`;
+      }, 50 * i);
+    }
+  };
+
   const visualiseDijkstra = () => {
     const startNode = grid[START_NODE_ROW][START_NODE_COL];
     const endNode = grid[END_NODE_ROW][END_NODE_COL];
     const visitedNodesInOrder = dijkstra(grid, startNode, endNode);
-    animateDijkstra(visitedNodesInOrder);
+    console.log("visitedNodesInOrder", visitedNodesInOrder);
+    const nodesInShortestPathOrder = getNodesInShortestPathOrder(endNode);
+    animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
   };
+
   return (
-    <div className="grid">
+    <>
       <button onClick={visualiseDijkstra}>Start Dijkstra</button>
-      {grid.map((row, rowIdx) => {
-        return (
-          <div key={rowIdx}>
-            {row.map((node, nodeIdx) => {
-              const { isStart, isEnd, isVisited } = node;
-              return (
-                <Node
-                  key={`${rowIdx}_${nodeIdx}`}
-                  row={row}
-                  col={node}
-                  isMousePressed={isMousePressed}
-                  onMouseDown={(row, col) => handleMouseDown(row, col)}
-                  onMouseEnter={(row, col) => handleMouseEnter(row, col)}
-                  onMouseUp={handleMouseUp}
-                  isStart={isStart}
-                  isEnd={isEnd}
-                  isVisited={isVisited}
-                ></Node>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
+      <div className="grid">
+        {grid.map((row, rowIdx) => {
+          return (
+            <div key={rowIdx}>
+              {row.map((node, nodeIdx) => {
+                const { row, col, isStart, isEnd, isWall } = node;
+                return (
+                  <Node
+                    key={nodeIdx}
+                    row={row}
+                    col={col}
+                    isMousePressed={isMousePressed}
+                    isWall={isWall}
+                    onMouseDown={(row, col) => handleMouseDown(row, col)}
+                    onMouseEnter={(row, col) => handleMouseEnter(row, col)}
+                    onMouseUp={handleMouseUp}
+                    isStart={isStart}
+                    isEnd={isEnd}
+                  ></Node>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 };
 
@@ -117,11 +130,14 @@ export const createNode = (row: number, col: number): NodeAttributes => {
     isVisited: false,
     isWall: false,
     previousNode: null,
-    isMousePressed: false,
   };
 };
 
-export const getNewGridWithWallToggled = (grid, row, col) => {
+export const getNewGridWithWallToggled = (
+  grid: any,
+  row: number,
+  col: number
+) => {
   const newGrid = grid.slice();
   const node = newGrid[row][col];
   const newNode = {

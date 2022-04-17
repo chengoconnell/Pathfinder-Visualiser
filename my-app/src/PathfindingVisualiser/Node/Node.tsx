@@ -5,18 +5,16 @@ export const Node = ({
   col,
   isStart,
   isEnd,
+  isMousePressed,
   onMouseDown,
   onMouseEnter,
   onMouseUp,
   isWall,
-  isVisited,
 }) => {
   const nodeType = isStart
     ? "node-start"
     : isEnd
     ? "node-finish"
-    : isVisited
-    ? "node-visited"
     : isWall
     ? "node-wall"
     : "";
